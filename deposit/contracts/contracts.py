@@ -4,7 +4,7 @@ def approval_program():
 
     def deposit():
         return Seq([
-        #Assert( Txn.assets.length() == Int(0) ),
+        Assert( Txn.assets.length() == Int(0) ),
         Assert( Txn.application_args.length() == Int(2) ),
 
         InnerTxnBuilder.Begin(),
@@ -25,7 +25,6 @@ def approval_program():
 
     def asa_deposit():
         return Seq([
-        Assert( Txn.application_args.length() == Int(3) ),
 
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields({
@@ -33,7 +32,7 @@ def approval_program():
             TxnField.sender: Txn.sender(),
             TxnField.asset_receiver: Global.current_application_address(),  # to be received by the smart contract
             TxnField.asset_amount: Btoi(Txn.application_args[1]),
-            TxnField.xfer_asset: Btoi(Txn.application_args[2]),  # asset id 
+            TxnField.xfer_asset: Txn.assets[0] ,  # asset id 
             TxnField.fee: Int(0),  # inner transaction fee is set to zero, fees to be paid by the main transaction
             TxnField.rekey_to: Txn.sender(),  # give authority back to the sender
         }),
@@ -51,9 +50,9 @@ def approval_program():
 
             InnerTxnBuilder.SetFields({
                 TxnField.type_enum : TxnType.AssetTransfer,
-                TxnField.xfer_asset : Btoi(Txn.application_args[1]),
+                TxnField.xfer_asset : Txn.assets[0],
                 TxnField.asset_amount : Int(0),
-                TxnField.sender : Global.current_application_address(),
+                #TxnField.sender : Global.current_application_address(),
                 TxnField.asset_receiver: Global.current_application_address(),
                 TxnField.fee : Int(0)
                 }),
@@ -66,10 +65,14 @@ def approval_program():
 
     def on_asa_deposit():
 
-        asset_balance = AssetHolding.balance( Global.current_application_address(), Btoi( Txn.application_args[2] ) ) 
+        asset_balance = AssetHolding.balance( Global.current_application_address(), Txn.assets[0] ) 
     
         return Seq([
+            Assert( Txn.application_args.length() == Int(2) ),
+            Assert( Txn.assets.length() == Int(1) ),
+
             asset_balance,
+
             If( Not (asset_balance.hasValue()))
                 .Then( Seq([ 
                     optin_deposit(),
