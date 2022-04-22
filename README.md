@@ -29,10 +29,8 @@ virtualenv venv && source venv/bin/activate && pip install -r requirements.txt
 ### Contract Args
 
 takes 2 args in case of Algo deposit. 
-takes 3 args in case of asset deposit.
 type of the tx
 amount
-(asset_id)
 
 for instance:
 
